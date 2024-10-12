@@ -85,8 +85,25 @@ const login = async (req, res) => {
   }
 };
 
+// Logout User
+const logout = async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter(
+      (token) => token.token !== req.token
+    );
+    await req.user.save();
+    res.json({ message: "Logged out successfully", success: true });
+    // Clear cookies
+    res.clearCookie("jwt");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
 // Export the controller functions
 module.exports = {
   register,
   login,
+  logout,
 };
