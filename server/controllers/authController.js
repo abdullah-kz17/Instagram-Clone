@@ -173,4 +173,7 @@ module.exports = {
   register,
   login,
   logout,
+  getProfile,
+  editProfile,
+  getSuggestedUsers,
 };
