@@ -1,3 +1,4 @@
+const { default: cloudinary } = require("../config/cloudinary");
 const getDataUri = require("../config/datauri");
 const User = require("../models/userModel");
 
@@ -128,6 +129,41 @@ const editProfile = async () => {
     let cloudResponse;
     if (profilePicture) {
       const fileUri = getDataUri(profilePicture);
+      await cloudinary.uploader.upload(fileUri);
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+    if (bio) {
+      user.bio = bio;
+    }
+    if (gender) {
+      user.gender = gender;
+    }
+    if (profilePicture) {
+      user.profilePicture = cloudResponse.secure_url;
+    }
+
+    await user.save();
+    res.json({ message: "Profile updated successfully", success: true, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error Updating profile", success: false });
+  }
+};
+
+const getSuggestedUsers = async () => {
+  try {
+    const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select(
+      "-password"
+    );
+    if (!suggestedUsers) {
+      return res
+        .status(404)
+        .json({ message: "No suggested users found", success: false });
     }
   } catch (error) {}
 };
