@@ -20,14 +20,11 @@ const register = async (req, res) => {
         .json({ message: "Email already exists", success: false });
     }
 
-    // Hash the password
-    const hashedPassword = await User.hashPassword(password);
-
-    // Create a new user
+    // Create a new user (the password will be hashed automatically)
     const user = await User.create({
       username,
       email,
-      password: hashedPassword,
+      password, // Pass plain password; it will be hashed by the pre-save hook
     });
 
     // Generate JWT token
