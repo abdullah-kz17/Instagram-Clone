@@ -1,3 +1,4 @@
+const getDataUri = require("../config/datauri");
 const User = require("../models/userModel");
 
 // Register a new user
@@ -99,6 +100,36 @@ const logout = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server error", success: false });
   }
+};
+
+// Get Profile
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    res.json({ message: "Profile fetched successfully", success: true, user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+// Update Profile
+const editProfile = async () => {
+  try {
+    const userId = req.id;
+    const { bio, gender } = req.body;
+    const profilePicture = req.file;
+    if (!bio || !gender) {
+      return res
+        .status(400)
+        .json({ message: "Bio and gender are required", success: false });
+    }
+    let cloudResponse;
+    if (profilePicture) {
+      const fileUri = getDataUri(profilePicture);
+    }
+  } catch (error) {}
 };
 
 // Export the controller functions
