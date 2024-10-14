@@ -8,7 +8,7 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.get("/logout", authController.logout);
 router.get("/:id/profile", authMiddleware, authController.getProfile);
-router.get(
+router.post(
   "/profile/edit",
   authMiddleware,
   upload.single("profilePicture"),

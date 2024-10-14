@@ -1,6 +1,7 @@
-const { default: cloudinary } = require("../config/cloudinary");
+const cloudinary = require("../config/cloudinary");
 const getDataUri = require("../config/datauri");
 const User = require("../models/userModel");
+const mongoose = require("mongoose");
 
 // Register a new user
 const register = async (req, res) => {
@@ -22,12 +23,8 @@ const register = async (req, res) => {
         .json({ message: "Email already exists", success: false });
     }
 
-    // Create a new user (the password will be hashed automatically)
-    const user = await User.create({
-      username,
-      email,
-      password, // Pass plain password; it will be hashed by the pre-save hook
-    });
+    // Create a new user
+    const user = await User.create({ username, email, password });
 
     // Generate JWT token
     const token = user.generateJWT();
@@ -88,29 +85,41 @@ const login = async (req, res) => {
 };
 
 // Logout User
-const logout = async (_, res) => {
+const logout = async (req, res) => {
   try {
     return res.cookie("token", "", { maxAge: 0 }).json({
       message: "Logged out successfully.",
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    res.status(500).json({ message: "Logout failed", success: false });
   }
 };
 
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    let user = await User.findById(userId)
-      .populate({ path: "posts", createdAt: -1 })
-      .populate("bookmarks");
-    return res.status(200).json({
-      user,
-      success: true,
-    });
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const user = await User.findById(userId).select("-password");
+    // .populate({ path: "posts", options: { sort: { createdAt: -1 } } })
+    // .populate("bookmarks");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    return res.status(200).json({ user, success: true });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({ message: "Server error", success: false });
   }
 };
 
@@ -127,12 +136,12 @@ const editProfile = async (req, res) => {
     }
 
     const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found.",
-        success: false,
-      });
-    }
+    // if (!user) {
+    //   return res.status(404).json({
+    //     message: "User not found.",
+    //     success: false,
+    //   });
+    // }
     if (bio) user.bio = bio;
     if (gender) user.gender = gender;
     if (profilePicture) user.profilePicture = cloudResponse.secure_url;

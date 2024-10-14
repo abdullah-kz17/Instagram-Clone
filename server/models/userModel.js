@@ -36,7 +36,7 @@ userSchema.methods.comparePassword = async function (password) {
 // Generating JWT token
 userSchema.methods.generateJWT = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
-    expiresIn: "7d",
+    expiresIn: "15d",
   });
 };
 
