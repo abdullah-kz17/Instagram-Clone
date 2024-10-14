@@ -88,87 +88,144 @@ const login = async (req, res) => {
 };
 
 // Logout User
-const logout = async (req, res) => {
+const logout = async (_, res) => {
   try {
-    req.user.tokens = req.user.tokens.filter(
-      (token) => token.token !== req.token
-    );
-    await req.user.save();
-    res.json({ message: "Logged out successfully", success: true });
-    // Clear cookies
-    res.clearCookie("jwt");
+    return res.cookie("token", "", { maxAge: 0 }).json({
+      message: "Logged out successfully.",
+      success: true,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", success: false });
+    console.log(error);
   }
 };
 
-// Get Profile
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId);
-    res.json({ message: "Profile fetched successfully", success: true, user });
+    let user = await User.findById(userId)
+      .populate({ path: "posts", createdAt: -1 })
+      .populate("bookmarks");
+    return res.status(200).json({
+      user,
+      success: true,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", success: false });
+    console.log(error);
   }
 };
 
-// Update Profile
-const editProfile = async () => {
+const editProfile = async (req, res) => {
   try {
     const userId = req.id;
     const { bio, gender } = req.body;
     const profilePicture = req.file;
-    if (!bio || !gender) {
-      return res
-        .status(400)
-        .json({ message: "Bio and gender are required", success: false });
-    }
     let cloudResponse;
+
     if (profilePicture) {
       const fileUri = getDataUri(profilePicture);
-      await cloudinary.uploader.upload(fileUri);
-    }
-    const user = await User.findById(userId);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found", success: false });
-    }
-    if (bio) {
-      user.bio = bio;
-    }
-    if (gender) {
-      user.gender = gender;
-    }
-    if (profilePicture) {
-      user.profilePicture = cloudResponse.secure_url;
+      cloudResponse = await cloudinary.uploader.upload(fileUri);
     }
 
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+        success: false,
+      });
+    }
+    if (bio) user.bio = bio;
+    if (gender) user.gender = gender;
+    if (profilePicture) user.profilePicture = cloudResponse.secure_url;
+
     await user.save();
-    res.json({ message: "Profile updated successfully", success: true, user });
+
+    return res.status(200).json({
+      message: "Profile updated.",
+      success: true,
+      user,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error Updating profile", success: false });
+    console.log(error);
   }
 };
 
-const getSuggestedUsers = async () => {
+const getSuggestedUsers = async (req, res) => {
   try {
     const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select(
       "-password"
     );
     if (!suggestedUsers) {
-      return res
-        .status(404)
-        .json({ message: "No suggested users found", success: false });
+      return res.status(400).json({
+        message: "Currently do not have any users",
+      });
     }
-  } catch (error) {}
+    return res.status(200).json({
+      success: true,
+      users: suggestedUsers,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-// Export the controller functions
+const followOrUnfollow = async (req, res) => {
+  try {
+    const followKrneWala = req.id; // patel
+    const jiskoFollowKrunga = req.params.id; // shivani
+    if (followKrneWala === jiskoFollowKrunga) {
+      return res.status(400).json({
+        message: "You cannot follow/unfollow yourself",
+        success: false,
+      });
+    }
+
+    const user = await User.findById(followKrneWala);
+    const targetUser = await User.findById(jiskoFollowKrunga);
+
+    if (!user || !targetUser) {
+      return res.status(400).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+    // mai check krunga ki follow krna hai ya unfollow
+    const isFollowing = user.following.includes(jiskoFollowKrunga);
+    if (isFollowing) {
+      // unfollow logic ayega
+      await Promise.all([
+        User.updateOne(
+          { _id: followKrneWala },
+          { $pull: { following: jiskoFollowKrunga } }
+        ),
+        User.updateOne(
+          { _id: jiskoFollowKrunga },
+          { $pull: { followers: followKrneWala } }
+        ),
+      ]);
+      return res
+        .status(200)
+        .json({ message: "Unfollowed successfully", success: true });
+    } else {
+      // follow logic ayega
+      await Promise.all([
+        User.updateOne(
+          { _id: followKrneWala },
+          { $push: { following: jiskoFollowKrunga } }
+        ),
+        User.updateOne(
+          { _id: jiskoFollowKrunga },
+          { $push: { followers: followKrneWala } }
+        ),
+      ]);
+      return res
+        .status(200)
+        .json({ message: "followed successfully", success: true });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -176,4 +233,5 @@ module.exports = {
   getProfile,
   editProfile,
   getSuggestedUsers,
+  followOrUnfollow,
 };
