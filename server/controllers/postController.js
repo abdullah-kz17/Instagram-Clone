@@ -130,7 +130,7 @@ const likePost = async (req, res) => {
         .json({ message: "Post not found", success: false });
     }
 
-    // Like logic
+    // Like logic add to set means post can only be liked once
     await post.updateOne({ $addToSet: { likes: userId } });
 
     return res

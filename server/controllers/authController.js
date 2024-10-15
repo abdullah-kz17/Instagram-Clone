@@ -72,6 +72,28 @@ const login = async (req, res) => {
     // Generate JWT token
     const token = user.generateJWT();
 
+    // populate each post if in the posts array
+    //post ek array hai or usmy id's hain or us id ki basse py data get krna hai to promise all use karein gy
+    const populatedPosts = await Promise.all(
+      user.posts.map(async (postId) => {
+        const post = await Post.findById(postId);
+        if (post.author.equals(user._id)) {
+          return post;
+        }
+        return null;
+      })
+    );
+    user = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio,
+      followers: user.followers,
+      following: user.following,
+      posts: populatedPosts,
+    };
+
     res.json({
       message: "Login successful",
       success: true,
@@ -97,6 +119,7 @@ const logout = async (req, res) => {
   }
 };
 
+// See other users profile
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -123,6 +146,7 @@ const getProfile = async (req, res) => {
   }
 };
 
+//Edit User Profile
 const editProfile = async (req, res) => {
   try {
     const userId = req.id;
@@ -158,6 +182,7 @@ const editProfile = async (req, res) => {
   }
 };
 
+// Get Suggested Users
 const getSuggestedUsers = async (req, res) => {
   try {
     const suggestedUsers = await User.find({ _id: { $ne: req.id } }).select(
@@ -177,6 +202,7 @@ const getSuggestedUsers = async (req, res) => {
   }
 };
 
+// Follow or Unfollow
 const followOrUnfollow = async (req, res) => {
   try {
     const followKrneWala = req.id; // patel
