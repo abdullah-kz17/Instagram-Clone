@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useState } from "react";
-import { Button } from "./button";
-import { Input } from "./input";
-import { Alert } from "./alert";
-import { Card } from "./card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Card } from "./ui/card";
+import { toast } from "sonner";
 
 const Signup = () => {
   const defaultForm = {
@@ -13,8 +13,6 @@ const Signup = () => {
   };
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [formData, setFormData] = useState(defaultForm);
 
   const handleChange = (e) => {
@@ -24,35 +22,32 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setSuccess(null);
 
     try {
       const response = await axios.post(
         "http://localhost:4000/api/auth/register",
-        formData
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
       );
 
-      if (response.status !== 200) {
-        throw new Error("Failed to sign up");
+      if (response.status) {
+        toast.success(response.data.message);
+        setFormData(defaultForm);
       }
-
-      setSuccess("Signup successful! Please check your email.");
-      setFormData(defaultForm);
     } catch (error) {
-      setError(error.message);
+      toast.error(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="p-6 max-w-md w-full">
-        <h1 className="text-xl font-bold mb-4">Sign Up</h1>
-
-        {error && <Alert variant="error">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <Card className="p-8 max-w-md w-full shadow-lg rounded-lg">
+        <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
 
         <form onSubmit={handleSubmit}>
           <Input
@@ -62,7 +57,7 @@ const Signup = () => {
             value={formData.username}
             onChange={handleChange}
             required
-            className="mb-4"
+            className="mb-4 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Input
             name="email"
@@ -71,7 +66,7 @@ const Signup = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="mb-4"
+            className="mb-4 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Input
             name="password"
@@ -80,12 +75,24 @@ const Signup = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="mb-4"
+            className="mb-4 p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200"
+          >
             {loading ? "Signing Up..." : "Sign Up"}
           </Button>
         </form>
+
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?
+          <a href="/login" className="text-blue-500 hover:underline">
+            {" "}
+            Log in
+          </a>
+        </p>
       </Card>
     </div>
   );
