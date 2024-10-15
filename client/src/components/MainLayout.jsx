@@ -2,10 +2,10 @@ import LeftSidebar from "./LeftSidebar";
 
 const MainLayout = ({ children }) => {
   return (
-    <>
+    <div className="flex">
       <LeftSidebar />
-      <div className="main-content">{children}</div>
-    </>
+      <div className="flex-grow">{children}</div>
+    </div>
   );
 };
 
