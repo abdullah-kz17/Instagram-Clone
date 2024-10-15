@@ -5,6 +5,7 @@ import {
   MessageCircle,
   Bookmark,
   Share,
+  Send,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -49,13 +50,16 @@ const Post = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [commentText, setCommentText] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const handleLike = () => setLiked(!liked);
   const handleSave = () => setSaved(!saved);
   const handleComment = (e) => {
-    e.preventDefault();
+    const inputText = e.preventDefault();
     if (commentText.trim()) {
+      setCommentText(inputText);
       console.log("New comment:", commentText);
+    } else {
       setCommentText("");
     }
   };
@@ -142,13 +146,18 @@ const Post = ({ post }) => {
             {comment.content}
           </p>
         ))}
-        <form onSubmit={handleComment} className="w-full mt-2">
+        <form
+          onSubmit={handleComment}
+          className="w-full mt-2 flex items-center"
+        >
           <Input
             type="text"
             placeholder="Add a comment..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
+            className="w-full px-4 py-2 border-none rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {commentText && <span className="text-blue-500">Post</span>}
         </form>
       </CardFooter>
     </Card>
