@@ -54,7 +54,7 @@ const login = async (req, res) => {
     }
 
     // Check if user exists
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
     if (!user) {
       return res
         .status(400)
@@ -103,19 +103,6 @@ const login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", success: false });
-  }
-};
-
-// Logout User
-const logout = async (req, res) => {
-  try {
-    return res.cookie("token", "", { maxAge: 0 }).json({
-      message: "Logged out successfully.",
-      success: true,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Logout failed", success: false });
   }
 };
 
@@ -261,12 +248,23 @@ const followOrUnfollow = async (req, res) => {
   }
 };
 
+// get Current user data
+const getCurrentUser = async (req, res) => {
+  try {
+    const userData = req.user;
+    console.log("User Data", userData);
+    res.status(200).json({ userData });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   register,
   login,
-  logout,
   getProfile,
   editProfile,
   getSuggestedUsers,
   followOrUnfollow,
+  getCurrentUser,
 };

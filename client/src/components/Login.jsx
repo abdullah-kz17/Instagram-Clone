@@ -4,8 +4,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/store/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const { storeTokenInLs } = useAuth();
+  const navigate = useNavigate();
   const defaultForm = {
     email: "",
     password: "",
@@ -24,7 +29,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/auth/login", // Change to login URL
+        "http://localhost:4000/api/auth/login",
         formData,
         {
           headers: { "Content-Type": "application/json" },
@@ -34,7 +39,9 @@ const Login = () => {
 
       if (response.status) {
         toast.success(response.data.message);
+        storeTokenInLs(response.data.token);
         setFormData(defaultForm);
+        navigate("/");
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
@@ -78,10 +85,9 @@ const Login = () => {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Don't have an account?
-          <a href="/signup" className="text-blue-500 hover:underline">
-            {" "}
+          <Link to="/signup" className="text-blue-500 hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </Card>
     </div>

@@ -4,8 +4,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/store/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const { storeTokenInLs } = useAuth();
+  const navigate = useNavigate();
   const defaultForm = {
     username: "",
     email: "",
@@ -36,6 +41,8 @@ const Signup = () => {
       if (response.status) {
         toast.success(response.data.message);
         setFormData(defaultForm);
+        storeTokenInLs(response.data.token);
+        navigate("/login");
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
@@ -88,10 +95,9 @@ const Signup = () => {
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Already have an account?
-          <a href="/login" className="text-blue-500 hover:underline">
-            {" "}
+          <Link to="/login" className="text-blue-500 hover:underline">
             Log in
-          </a>
+          </Link>
         </p>
       </Card>
     </div>

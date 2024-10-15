@@ -6,7 +6,6 @@ const upload = require("../middleware/multer");
 
 router.post("/register", authController.register);
 router.post("/login", authController.login);
-router.get("/logout", authController.logout);
 router.get("/:id/profile", authMiddleware, authController.getProfile);
 router.post(
   "/profile/edit",
@@ -20,5 +19,5 @@ router.post(
   authMiddleware,
   authController.followOrUnfollow
 );
-
+router.get("/user", authMiddleware, authController.getCurrentUser);
 module.exports = router;
