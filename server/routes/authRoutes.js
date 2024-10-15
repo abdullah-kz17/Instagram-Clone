@@ -15,7 +15,7 @@ router.post(
   authController.editProfile
 );
 router.get("/suggested", authMiddleware, authController.getSuggestedUsers);
-router.get(
+router.post(
   "/followOrUnfollow/:id",
   authMiddleware,
   authController.followOrUnfollow
