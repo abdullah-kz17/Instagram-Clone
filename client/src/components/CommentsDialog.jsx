@@ -12,9 +12,9 @@ const CommentDialog = ({
   onClose,
 }) => {
   return (
-    <Dialog open={true} className="w-full max-w-4xl">
+    <Dialog open={true}>
       <DialogContent
-        className="p-4"
+        className="p-0 h-auto max-w-4xl flex flex-col"
         onInteractOutside={() => setOpenComments(false)}
       >
         <div className="flex justify-between items-center mb-4">
@@ -24,7 +24,7 @@ const CommentDialog = ({
           </Button>
         </div>
 
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 flex-1">
           <div className="w-1/2 pr-4">
             <img
               src="https://images.unsplash.com/reserve/LJIZlzHgQ7WPSh5KVTCB_Typewriter.jpg?q=80&w=1896&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
