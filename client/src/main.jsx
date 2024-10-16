@@ -4,12 +4,17 @@ import App from "./App.jsx";
 import "./index.css";
 import { Toaster } from "sonner";
 import AuthProvider from "./store/AuthContext.jsx";
+import { Provider } from "react-redux";
+import store from "./redux/store.js";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <Provider store={store}>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </Provider>
+
     <Toaster />
   </StrictMode>
 );
