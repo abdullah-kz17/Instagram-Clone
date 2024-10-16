@@ -2,6 +2,7 @@ const cloudinary = require("../config/cloudinary");
 const getDataUri = require("../config/datauri");
 const User = require("../models/userModel");
 const mongoose = require("mongoose");
+const Post = require("../models/postModel");
 
 // Register a new user
 const register = async (req, res) => {

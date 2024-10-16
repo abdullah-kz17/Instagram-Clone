@@ -7,24 +7,29 @@ import { readFileAsDataUri } from "@/lib/utils";
 import { toast } from "sonner";
 import axios from "axios";
 import { useAuth } from "@/store/AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import { setPosts } from "@/redux/postSlice";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
+  const { user } = useAuth();
   const [file, setFile] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [caption, setCaption] = useState("");
-
+  const dispatch = useDispatch();
+  const posts = useSelector((state) => state.post.posts); // Ensure you access posts correctly
   const { authenticationToken } = useAuth();
 
   const createPostHandler = async (e) => {
+    e.preventDefault(); // Prevent default form submission
     const formData = new FormData();
     formData.append("caption", caption);
-    if (imagePreview) {
+    if (file) {
       formData.append("image", file);
     }
+
     setLoading(true);
-    console.log(file, caption);
     try {
       const response = await axios.post(
         "http://localhost:4000/api/post/addpost",
@@ -37,24 +42,37 @@ const CreatePost = ({ open, setOpen }) => {
           withCredentials: true,
         }
       );
+
       if (response.data.success) {
+        // Add new post to existing posts in state
+        dispatch(setPosts([response.data.post, ...posts]));
         toast.success(response.data.message);
+        setOpen(false); // Close dialog after successful post creation
+        resetForm(); // Reset form fields
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFile(file);
-      const dataUri = await readFileAsDataUri(file);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const dataUri = await readFileAsDataUri(selectedFile);
       setImagePreview(dataUri);
     }
   };
+
+  // Function to reset form fields
+  const resetForm = () => {
+    setFile("");
+    setImagePreview("");
+    setCaption("");
+  };
+
   return (
     <Dialog open={open}>
       <DialogContent onInteractOutside={() => setOpen(false)}>
@@ -63,19 +81,21 @@ const CreatePost = ({ open, setOpen }) => {
         </DialogHeader>
         <div className="flex gap-3 items-center">
           <Avatar>
-            <AvatarImage src="" alt="image" />
+            <AvatarImage src={user?.userData?.profilePicture} alt="image" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="font-semibold text-xs">Username</h1>
-            <span className="text-gray-600 text-xs">Bio here...</span>
+            <h1 className="font-semibold text-xs">
+              {user?.userData?.username}
+            </h1>
+            <span className="text-gray-600 text-xs">{user?.userData?.bio}</span>
           </div>
         </div>
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           className="focus-visible:ring-transparent border-none"
-          placeholder="write a caption...."
+          placeholder="Write a caption...."
         />
         {imagePreview && (
           <img src={imagePreview} alt="preview" className="w-full h-64" />
@@ -92,16 +112,14 @@ const CreatePost = ({ open, setOpen }) => {
         >
           Select from computer
         </Button>
-        {imagePreview && (
-          <Button
-            type="submit"
-            className="w-full"
-            onClick={createPostHandler}
-            disabled={loading}
-          >
-            {loading ? "Please wait ....." : "Post"}
-          </Button>
-        )}
+        <Button
+          type="submit"
+          className={`w-full ${!imagePreview ? "hidden" : ""}`}
+          onClick={createPostHandler}
+          disabled={loading}
+        >
+          {loading ? "Please wait ....." : "Post"}
+        </Button>
       </DialogContent>
     </Dialog>
   );

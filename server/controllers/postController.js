@@ -54,7 +54,7 @@ const createPost = async (req, res) => {
     return res.json({
       message: "Post created successfully",
       success: true,
-      newPost: post,
+      post,
     });
   } catch (error) {
     console.error(error);

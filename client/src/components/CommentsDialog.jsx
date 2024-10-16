@@ -4,6 +4,7 @@ import { DialogContent } from "./ui/dialog";
 import { DialogTitle } from "./ui/dialog";
 import { AvatarImage } from "./ui/avatar";
 import { Avatar } from "@radix-ui/react-avatar";
+import { useSelector } from "react-redux";
 
 const CommentDialog = ({
   comments,
@@ -11,6 +12,8 @@ const CommentDialog = ({
   setOpenComments,
   onClose,
 }) => {
+  const { posts } = useSelector((state) => state.post);
+
   return (
     <Dialog open={true}>
       <DialogContent
@@ -27,7 +30,7 @@ const CommentDialog = ({
         <div className="flex space-x-4 flex-1">
           <div className="w-1/2 pr-4">
             <img
-              src="https://images.unsplash.com/reserve/LJIZlzHgQ7WPSh5KVTCB_Typewriter.jpg?q=80&w=1896&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src={posts?.image}
               alt=""
               className="w-full h-auto object-cover rounded-lg shadow-md"
             />

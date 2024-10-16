@@ -49,7 +49,6 @@ const LeftSidebar = () => {
     {
       icon: <LogOut />,
       text: "Logout",
-      path: "/logout",
       onClick: handleLogout,
     },
   ];
