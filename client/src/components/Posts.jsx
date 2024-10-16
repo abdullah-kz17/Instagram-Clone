@@ -7,6 +7,7 @@ import {
   Share,
   Send,
 } from "lucide-react";
+import CommentDialog from "./CommentsDialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "./ui/card";
@@ -49,68 +50,25 @@ const posts = [
 const Post = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [openComments, setOpenComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const handleLike = () => setLiked(!liked);
   const handleSave = () => setSaved(!saved);
   const handleComment = (e) => {
-    const inputText = e.preventDefault();
+    e.preventDefault();
     if (commentText.trim()) {
-      setCommentText(inputText);
-      console.log("New comment:", commentText);
-    } else {
+      // Add comment logic here
       setCommentText("");
+      setOpenComments(true);
     }
   };
 
   return (
     <Card className="mb-6">
-      <CardHeader className="flex flex-row items-center space-x-4 p-4">
-        <Avatar>
-          <AvatarImage src={post.author.avatar} alt={post.author.name} />
-          <AvatarFallback>{post.author.name[0]}</AvatarFallback>
-        </Avatar>
-        <span className="font-semibold">{post.author.name}</span>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Post options</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2">
-              <Button variant="ghost" className="w-full justify-start">
-                Report
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Unfollow
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Add to favorites
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Go to post
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Share
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Copy link
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Embed
-              </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                Cancel
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
+      {/* CardHeader */}
       <CardContent className="p-0">
         <img src={post.image} alt="Post content" className="w-full" />
       </CardContent>
@@ -124,7 +82,11 @@ const Post = ({ post }) => {
                 }`}
               />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setOpenComments(true)}
+            >
               <MessageCircle className="h-6 w-6" />
             </Button>
             <Button variant="ghost" size="icon">
@@ -140,12 +102,7 @@ const Post = ({ post }) => {
           <span className="font-semibold">{post.author.name}</span>{" "}
           {post.caption}
         </p>
-        {post.comments.map((comment, index) => (
-          <p key={index}>
-            <span className="font-semibold">{comment.author}</span>{" "}
-            {comment.content}
-          </p>
-        ))}
+        <p>{post.comments[0]?.content || "No comments yet!"}</p>
         <form
           onSubmit={handleComment}
           className="w-full mt-2 flex items-center"
@@ -160,6 +117,26 @@ const Post = ({ post }) => {
           {commentText && <span className="text-blue-500">Post</span>}
         </form>
       </CardFooter>
+
+      <div className="mt-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setOpenComments(!openComments)}
+        >
+          <MessageCircle
+            className={`h-6 w-6 ${openComments ? "fill-current" : ""}`}
+          />
+        </Button>
+        {openComments && (
+          <CommentDialog
+            comments={post.comments}
+            onClose={() => setOpenComments(false)}
+            openComments={openComments}
+            setOpenComments={setOpenComments}
+          />
+        )}
+      </div>
     </Card>
   );
 };
