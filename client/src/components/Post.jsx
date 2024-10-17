@@ -11,14 +11,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/store/AuthContext";
-import { useSelector } from "react-redux";
 import PostControlsDialog from "./PostControlsDialog";
 
-const Post = ({ post }) => {
-  const { user } = useAuth();
-  const { posts } = useSelector((state) => state.post);
-
+const Post = ({ post, onOpenDialog }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [openComments, setOpenComments] = useState(false);
@@ -30,7 +25,6 @@ const Post = ({ post }) => {
   const handleComment = (e) => {
     e.preventDefault();
     if (commentText.trim()) {
-      // Add comment logic here (e.g., dispatch an action to add comment)
       console.log("New comment:", commentText);
       setCommentText("");
       setOpenComments(true); // Open comments dialog after adding a comment
@@ -39,30 +33,47 @@ const Post = ({ post }) => {
 
   return (
     <Card className="mb-6">
-      {/* Card Header */}
       <CardHeader>
-        {/* Avatar */}
-        <div className="flex items-center space-x-2">
-          <Avatar>
-            <AvatarImage
-              src={post.author.profilePicture}
-              alt={post.author.username || "User"}
-            />
-          </Avatar>
-          <div>
-            <span className="font-semibold">{post.author.username}</span>
-            <span className="text-gray-500 ml-2 text-xs">{post.createdAt}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Avatar>
+              <AvatarImage
+                src={post?.author?.profilePicture}
+                alt={post?.author?.username || "User"}
+              />
+              <AvatarFallback>
+                {post?.author?.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <span className="font-semibold">{post?.author?.username}</span>
+              <span className="text-gray-500 ml-2 text-xs">
+                {new Date(post?.createdAt).toLocaleString()}
+              </span>
+            </div>
           </div>
-          <div className="">
-            <PostControlsDialog />
-          </div>
+          <Button variant="ghost" size="icon" onClick={onOpenDialog}>
+            <MoreHorizontal className="h-5 w-5" />
+          </Button>
         </div>
       </CardHeader>
-      {/* Card Content */}
+
       <CardContent className="p-0">
-        <img src={post.image} alt="Post content" className="w-full" />
+        {post?.image && (
+          <img
+            src={post.image}
+            alt="Post content"
+            className="w-full object-cover"
+            onError={(e) => {
+              e.target.src = "/fallback-image.jpg"; // Add a fallback image
+              e.target.onerror = null;
+            }}
+          />
+        )}
       </CardContent>
+
       <CardFooter className="flex flex-col items-start p-4">
+        {/* Like and Comment Buttons */}
         <div className="flex w-full justify-between mb-2">
           <div className="flex space-x-4">
             <Button variant="ghost" size="icon" onClick={handleLike}>
@@ -87,14 +98,27 @@ const Post = ({ post }) => {
             <Bookmark className={`h-6 w-6 ${saved ? "fill-current" : ""}`} />
           </Button>
         </div>
-        <p className="font-semibold">{post.likes} likes</p>
-        <p>
-          <span className="font-bold">{post.author.username}</span>
-          <span className="font-semibold">{post.author.name}</span>{" "}
-          {post.caption}
-        </p>
-        {/* Display first comment or a message if no comments */}
-        <p>{post.comments[0]?.content || "No comments yet!"}</p>
+
+        {/* Likes and Caption */}
+        {post?.likes.length > 0 && (
+          <p className="font-semibold">{post?.likes.length} likes</p>
+        )}
+        {post?.caption && (
+          <p>
+            <span className="font-bold">{post?.author.username}</span>{" "}
+            {post?.caption}
+          </p>
+        )}
+
+        {/* Comments Section */}
+        {post.comments.length > 0 ? (
+          <Button variant="ghost" onClick={() => setOpenComments(true)}>
+            View all {post?.comments.length} comments
+          </Button>
+        ) : (
+          <p>No comments yet!</p>
+        )}
+
         {/* Comment Input */}
         <form
           onSubmit={handleComment}
@@ -113,17 +137,17 @@ const Post = ({ post }) => {
             </Button>
           )}
         </form>
-      </CardFooter>
 
-      {/* Comments Dialog */}
-      {openComments && (
-        <CommentDialog
-          comments={post.comments}
-          onClose={() => setOpenComments(false)}
-          openComments={openComments}
-          setOpenComments={setOpenComments}
-        />
-      )}
+        {/* Comments Dialog */}
+        {openComments && (
+          <CommentDialog
+            comments={post?.comments}
+            onClose={() => setOpenComments(false)}
+            openComments={openComments}
+            setOpenComments={setOpenComments}
+          />
+        )}
+      </CardFooter>
     </Card>
   );
 };

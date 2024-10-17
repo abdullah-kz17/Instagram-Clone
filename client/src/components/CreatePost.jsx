@@ -18,7 +18,7 @@ const CreatePost = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
   const [caption, setCaption] = useState("");
   const dispatch = useDispatch();
-  const posts = useSelector((state) => state.post.posts); // Ensure you access posts correctly
+  const { posts } = useSelector((state) => state.post);
   const { authenticationToken } = useAuth();
 
   const createPostHandler = async (e) => {
@@ -47,8 +47,8 @@ const CreatePost = ({ open, setOpen }) => {
         // Add new post to existing posts in state
         dispatch(setPosts([response.data.post, ...posts]));
         toast.success(response.data.message);
-        setOpen(false); // Close dialog after successful post creation
         resetForm(); // Reset form fields
+        setOpen(false); // Close dialog after successful post creation
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred");
