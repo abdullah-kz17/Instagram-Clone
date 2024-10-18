@@ -99,12 +99,11 @@ const Profile = () => {
                 <div key={post._id} className="aspect-square bg-muted">
                   {/* Post thumbnail would go here */}
                   <div>
-                    <p>{post.caption}</p>
-                    <img src={post.image} alt="" />
+                    <img src={post.image} alt="" className="object-cover" />
                   </div>
-                  <div className="w-full h-full flex items-center justify-center">
+                  {/* <div className="w-full h-full flex items-center justify-center">
                     <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                  </div>
+                  </div> */}
                 </div>
               ))}
             </div>
