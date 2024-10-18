@@ -22,7 +22,7 @@ const CreatePost = ({ open, setOpen }) => {
   const { authenticationToken } = useAuth();
 
   const createPostHandler = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     const formData = new FormData();
     formData.append("caption", caption);
     if (file) {
