@@ -1,9 +1,10 @@
 import axios from "axios";
 import { createContext, useEffect, useState, useContext } from "react";
+
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [error, setError] = useState("");
@@ -20,6 +21,7 @@ const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setToken("");
+    setUser(null); // Clear user data on logout
   };
 
   const getCurrentUserData = async () => {
@@ -29,7 +31,6 @@ const AuthProvider = ({ children }) => {
       });
       setUser(response.data);
       setLoading(false);
-      console.log("User Data", response.data);
     } catch (error) {
       console.error(error);
       setLoading(false);
@@ -39,23 +40,23 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       getCurrentUserData();
+    } else {
+      setLoading(false); // Stop loading if no token
     }
-  }, []);
+  }, [token]);
 
   return (
-    <>
-      <AuthContext.Provider
-        value={{
-          user,
-          storeTokenInLs,
-          authenticationToken,
-          isLoggedIn,
-          logout,
-        }}
-      >
-        {children}
-      </AuthContext.Provider>
-    </>
+    <AuthContext.Provider
+      value={{
+        user,
+        storeTokenInLs,
+        authenticationToken,
+        isLoggedIn,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 

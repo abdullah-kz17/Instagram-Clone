@@ -1,16 +1,16 @@
-import axios from "axios";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/store/AuthContext";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
   const { storeTokenInLs } = useAuth();
   const navigate = useNavigate();
+
   const defaultForm = {
     email: "",
     password: "",
@@ -37,14 +37,14 @@ const Login = () => {
         }
       );
 
-      if (response.status) {
+      if (response.data.success) {
         toast.success(response.data.message);
-        storeTokenInLs(response.data.token);
-        setFormData(defaultForm);
-        navigate("/");
+        storeTokenInLs(response.data.token); // Store token
+        setFormData(defaultForm); // Reset form fields
+        navigate("/"); // Navigate to home page
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "An error occurred");
     } finally {
       setLoading(false);
     }

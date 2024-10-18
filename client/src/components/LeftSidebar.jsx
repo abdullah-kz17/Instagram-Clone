@@ -20,6 +20,7 @@ const LeftSidebar = () => {
   const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
+    console.log("Logging out..."); // Debugging log
     logout(); // Call logout function
     navigate("/login"); // Navigate to login page
   };

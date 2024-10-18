@@ -291,29 +291,32 @@ const deletePostById = async (req, res) => {
 
     const post = await Post.findById(postId);
 
-    if (!post || post.author.toString() !== userId) {
+    // Check if post exists and if user is authorized
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+        success: false,
+      });
+    }
+
+    // Check if the logged-in user is the author of the post
+    if (post.author.toString() !== userId) {
       return res.status(403).json({
         message: "You are not authorized to delete this post",
         success: false,
       });
     }
 
+    // Delete post
     await Post.findByIdAndDelete(postId);
 
     // Update user's posts array
-    let user = await User.findById(userId);
+    const user = await User.findById(userId);
     user.posts = user.posts.filter((p) => p.toString() !== postId);
     await user.save();
 
     // Delete associated comments
     await Comment.deleteMany({ post: postId });
-
-    if (!deletedPost) {
-      return res.status(404).json({
-        message: "Post not found",
-        success: false,
-      });
-    }
 
     return res.status(200).json({
       message: "Post deleted successfully",
