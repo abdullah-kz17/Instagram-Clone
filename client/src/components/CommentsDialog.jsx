@@ -10,27 +10,29 @@ const CommentDialog = ({
   openComments,
   setOpenComments,
   onClose,
-  post,
 }) => {
+  const { selectedPosts } = useSelector((state) => state.post);
   return (
     <Dialog open={openComments} onOpenChange={setOpenComments}>
       <DialogHeader>
         <div className="flex items-center space-x-2">
-          {post?.author && (
+          {selectedPosts?.author && (
             <>
               <Avatar>
                 <AvatarImage
-                  src={post.author.profilePicture}
-                  alt={post.author.username}
+                  src={selectedPosts.author.profilePicture}
+                  alt={selectedPosts.author.username}
                   className="h-8 w-8 rounded-full"
                 />
               </Avatar>
-              <span className="font-semibold">{post.author.username}</span>
+              <span className="font-semibold">
+                {selectedPosts.author.username}
+              </span>
             </>
           )}
         </div>
         <div className="flex items-center space-x-2">
-          <span>{new Date(post?.createdAt).toLocaleString()}</span>
+          <span>{new Date(selectedPosts?.createdAt).toLocaleString()}</span>
         </div>
       </DialogHeader>
       <DialogContent
@@ -47,14 +49,14 @@ const CommentDialog = ({
         <div className="flex space-x-4 flex-1">
           <div className="w-1/2 pr-4">
             <img
-              src={post.image}
+              src={selectedPosts?.image}
               alt="Post content"
               className="w-full h-auto object-cover rounded-lg shadow-md"
             />
           </div>
           <div className="w-1/2">
             <ul className="space-y-2">
-              {comments.map((comment) => (
+              {selectedPosts?.comments.map((comment) => (
                 <li key={comment._id} className="flex items-center space-x-2">
                   {comment.author && (
                     <>

@@ -16,7 +16,7 @@ import axios from "axios";
 import { useAuth } from "@/store/AuthContext";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts } from "@/redux/postSlice";
+import { setPosts, setSelectedPosts } from "@/redux/postSlice";
 
 const Post = ({ post, onOpenDialog }) => {
   const { user, authenticationToken } = useAuth();
@@ -170,7 +170,10 @@ const Post = ({ post, onOpenDialog }) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setOpenComments(true)}
+              onClick={() => {
+                dispatch(setSelectedPosts(post));
+                setOpenComments(true);
+              }}
             >
               <MessageCircle className="h-6 w-6" />
             </Button>
@@ -197,7 +200,13 @@ const Post = ({ post, onOpenDialog }) => {
 
         {/* Comments Section */}
         {post.comments.length > 0 ? (
-          <Button variant="ghost" onClick={() => setOpenComments(true)}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              dispatch(setSelectedPosts(post));
+              setOpenComments(true);
+            }}
+          >
             View all {post?.comments.length} comments
           </Button>
         ) : (
@@ -230,7 +239,6 @@ const Post = ({ post, onOpenDialog }) => {
         {openComments && (
           <CommentDialog
             comments={post?.comments}
-            post={post}
             onClose={() => setOpenComments(false)}
             openComments={openComments}
             setOpenComments={setOpenComments}
