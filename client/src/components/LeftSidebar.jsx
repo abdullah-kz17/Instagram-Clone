@@ -45,7 +45,7 @@ const LeftSidebar = () => {
         </Avatar>
       ),
       text: "Profile",
-      path: "/profile",
+      path: `/profile/${user?.userData._id}`,
     },
     {
       icon: <LogOut />,

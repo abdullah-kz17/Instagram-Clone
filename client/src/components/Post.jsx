@@ -17,6 +17,7 @@ import { useAuth } from "@/store/AuthContext";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts, setSelectedPosts } from "@/redux/postSlice";
+import { Badge } from "./ui/badge";
 
 const Post = ({ post, onOpenDialog }) => {
   const { user, authenticationToken } = useAuth();
@@ -134,6 +135,9 @@ const Post = ({ post, onOpenDialog }) => {
               <span className="text-gray-500 ml-2 text-xs">
                 {new Date(post?.createdAt).toLocaleString()}
               </span>
+              {user?.userData._id === post?.author?._id && (
+                <Badge variant="secondary">Author</Badge>
+              )}
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onOpenDialog}>
