@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import Post from "./Post";
 import PostControlsDialog from "./PostControlsDialog";
+import CommentDialog from "./CommentsDialog";
 
 const Posts = () => {
   const { posts } = useSelector((state) => state.post);
@@ -14,10 +15,12 @@ const Posts = () => {
           <div key={post._id}>
             <Post post={post} onOpenDialog={() => setSelectedPost(post)} />
             {selectedPost && selectedPost._id === post._id && (
-              <PostControlsDialog
-                post={selectedPost}
-                onClose={() => setSelectedPost(null)}
-              />
+              <>
+                <PostControlsDialog
+                  post={selectedPost}
+                  onClose={() => setSelectedPost(null)}
+                />
+              </>
             )}
           </div>
         ))

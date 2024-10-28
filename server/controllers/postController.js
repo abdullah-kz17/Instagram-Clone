@@ -196,6 +196,10 @@ const addComment = async (req, res) => {
       post: postId,
     });
 
+    await comment.populate({
+      path: "author",
+      select: "username profilePicture",
+    });
     await comment.save();
 
     // Update post's comments array

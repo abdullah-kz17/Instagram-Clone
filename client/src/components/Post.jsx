@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -12,22 +12,106 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Input } from "@/components/ui/input";
 import PostControlsDialog from "./PostControlsDialog";
+import axios from "axios";
+import { useAuth } from "@/store/AuthContext";
+import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { setPosts } from "@/redux/postSlice";
 
 const Post = ({ post, onOpenDialog }) => {
-  const [liked, setLiked] = useState(false);
+  const { user, authenticationToken } = useAuth();
+  const { posts } = useSelector((state) => state.post);
+
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [saved, setSaved] = useState(false);
   const [openComments, setOpenComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [postLike, setPostLike] = useState(post?.likes?.length);
+  const [comment, setComment] = useState(post.comments);
+
+  useEffect(() => {
+    setLiked(post.likes.includes(user?._id) || false);
+    setPostLike(post.likes.length);
+  }, [post, user]);
 
   const handleLike = () => setLiked(!liked);
   const handleSave = () => setSaved(!saved);
+  const dispatch = useDispatch();
 
-  const handleComment = (e) => {
-    e.preventDefault();
-    if (commentText.trim()) {
-      console.log("New comment:", commentText);
-      setCommentText("");
-      setOpenComments(true); // Open comments dialog after adding a comment
+  const likeDislike = async () => {
+    try {
+      const action = liked ? "dislike" : "like";
+      const response = await axios.get(
+        `http://localhost:4000/api/post/${post._id}/${action}`,
+        {
+          headers: {
+            Authorization: authenticationToken,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes);
+        toast.success(response.data.message);
+        setLiked(!liked);
+
+        // Update the local state to reflect the new likes
+        const updatedPostData = posts.map((p) =>
+          p._id === post._id
+            ? {
+                ...p,
+                likes: liked
+                  ? p.likes.filter((id) => id !== user?._id)
+                  : [...p.likes, user?._id],
+              }
+            : p
+        );
+        dispatch(setPosts(updatedPostData));
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      console.error(error);
+    }
+  };
+
+  const commentHandler = async () => {
+    if (!commentText.trim()) {
+      toast.error("Comment text is required");
+      return; // Prevent proceeding if comment text is empty
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:4000/api/post/${post._id}/comment`,
+        { text: commentText }, // Ensure you send { text: commentText }
+        {
+          headers: {
+            Authorization: authenticationToken,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        // Add the new comment to the local state
+        const updatedCommentData = [...comment, response.data.comment]; // Use the comment returned from the server
+        setComment(updatedCommentData);
+
+        // Update the post in the Redux store
+        const updatedPostData = posts.map((p) =>
+          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(response.data.message);
+        setCommentText(""); // Clear the input field
+        setOpenComments(true); // Open comments dialog to show new comment
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      console.error(error);
     }
   };
 
@@ -76,7 +160,7 @@ const Post = ({ post, onOpenDialog }) => {
         {/* Like and Comment Buttons */}
         <div className="flex w-full justify-between mb-2">
           <div className="flex space-x-4">
-            <Button variant="ghost" size="icon" onClick={handleLike}>
+            <Button variant="ghost" size="icon" onClick={likeDislike}>
               <Heart
                 className={`h-6 w-6 ${
                   liked ? "fill-red-500 text-red-500" : ""
@@ -100,9 +184,10 @@ const Post = ({ post, onOpenDialog }) => {
         </div>
 
         {/* Likes and Caption */}
-        {post?.likes.length > 0 && (
-          <p className="font-semibold">{post?.likes.length} likes</p>
-        )}
+        <div className="flex items-center">
+          {postLike && <p className="font-semibold">{postLike} likes</p>}
+        </div>
+
         {post?.caption && (
           <p>
             <span className="font-bold">{post?.author.username}</span>{" "}
@@ -121,7 +206,10 @@ const Post = ({ post, onOpenDialog }) => {
 
         {/* Comment Input */}
         <form
-          onSubmit={handleComment}
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent default form submission
+            commentHandler(); // Call comment handler
+          }}
           className="w-full mt-2 flex items-center"
         >
           <Input
@@ -142,6 +230,7 @@ const Post = ({ post, onOpenDialog }) => {
         {openComments && (
           <CommentDialog
             comments={post?.comments}
+            post={post}
             onClose={() => setOpenComments(false)}
             openComments={openComments}
             setOpenComments={setOpenComments}
