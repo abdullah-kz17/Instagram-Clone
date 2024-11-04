@@ -1,16 +1,24 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Card, CardHeader, CardContent } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Grid, Settings, Bookmark, ImageIcon } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { useSelector } from "react-redux";
+import useGetUserProfile from "@/hooks/useGetUserProfile";
+import { Link, useParams } from "react-router-dom";
 
 const Profile = () => {
   const { user } = useAuth();
-  const { posts } = useSelector((state) => state.post);
+  const params = useParams();
+  const userId = params.id;
+  useGetUserProfile(userId);
+
+  const { userProfile } = useSelector((state) => state.auth);
+  const isLoggedInUserProfile = user?.userData?._id === userProfile?._id;
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       {/* Profile Header */}
@@ -18,24 +26,32 @@ const Profile = () => {
         <Avatar className="w-32 h-32">
           <AvatarImage
             src={
-              user?.userData.profilePicture === "default_profile_picture.jpg"
+              userProfile?.profilePicture === "default_profile_picture.jpg"
                 ? "/default-avatar.png"
-                : user?.userData.profilePicture
+                : userProfile?.profilePicture
             }
-            alt={user?.userData.username}
+            alt={userProfile?.username}
           />
           <AvatarFallback>
-            {user?.userData.username[0].toUpperCase()}
+            {userProfile?.username?.[0]?.toUpperCase() || "?"}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
           <div className="flex items-center gap-4 mb-4">
             <h1 className="text-2xl font-semibold">
-              {user?.userData.username}
+              {userProfile?.username || "Username"}
             </h1>
             <div className="flex gap-2">
-              <Button variant="outline">Edit Profile</Button>
+              {isLoggedInUserProfile ? (
+                <Link to="/profile/edit">
+                  <Button variant="ghost" size="small">
+                    Edit Profile
+                  </Button>
+                </Link>
+              ) : (
+                <Button>Follow</Button>
+              )}
               <Button variant="ghost" size="icon">
                 <Settings className="w-5 h-5" />
               </Button>
@@ -46,19 +62,19 @@ const Profile = () => {
           <div className="flex gap-8 mb-4">
             <div className="text-center">
               <span className="font-semibold">
-                {user?.userData.posts?.length || 0}
+                {userProfile?.posts?.length || 0}
               </span>
               <span className="text-muted-foreground ml-1">posts</span>
             </div>
             <div className="text-center">
               <span className="font-semibold">
-                {user?.userData.followers?.length || 0}
+                {userProfile?.followers?.length || 0}
               </span>
               <span className="text-muted-foreground ml-1">followers</span>
             </div>
             <div className="text-center">
               <span className="font-semibold">
-                {user?.userData.following?.length || 0}
+                {userProfile?.following?.length || 0}
               </span>
               <span className="text-muted-foreground ml-1">following</span>
             </div>
@@ -67,7 +83,7 @@ const Profile = () => {
           {/* Bio */}
           <div>
             <p className="text-sm text-muted-foreground">
-              {user?.userData.bio || "No bio yet"}
+              {userProfile?.bio || "No bio yet"}
             </p>
           </div>
         </div>
@@ -93,17 +109,15 @@ const Profile = () => {
         </TabsList>
 
         <TabsContent value="posts">
-          {posts && posts.length > 0 ? (
+          {userProfile?.posts && userProfile?.posts.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
-              {posts.map((post) => (
+              {userProfile.posts.map((post) => (
                 <div key={post._id} className="aspect-square bg-muted">
-                  {/* Post thumbnail would go here */}
-                  <div>
-                    <img src={post.image} alt="" className="object-cover" />
-                  </div>
-                  {/* <div className="w-full h-full flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                  </div> */}
+                  <img
+                    src={post.image || "/default-thumbnail.png"}
+                    alt=""
+                    className="object-cover w-full h-full"
+                  />
                 </div>
               ))}
             </div>
@@ -121,9 +135,9 @@ const Profile = () => {
         </TabsContent>
 
         <TabsContent value="saved">
-          {user?.userData.bookmarks && user?.userData.bookmarks.length > 0 ? (
+          {userProfile?.bookmarks && userProfile?.bookmarks.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">
-              {user?.userData.bookmarks.map((bookmark, index) => (
+              {userProfile.bookmarks.map((bookmark, index) => (
                 <div key={index} className="aspect-square bg-muted">
                   <div className="w-full h-full flex items-center justify-center">
                     <ImageIcon className="w-8 h-8 text-muted-foreground" />

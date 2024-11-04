@@ -53,6 +53,7 @@ const AuthProvider = ({ children }) => {
         authenticationToken,
         isLoggedIn,
         logout,
+        setUser,
       }}
     >
       {children}

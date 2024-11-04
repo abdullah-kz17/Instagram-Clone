@@ -117,9 +117,10 @@ const getProfile = async (req, res) => {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
 
-    const user = await User.findById(userId).select("-password");
-    // .populate({ path: "posts", options: { sort: { createdAt: -1 } } })
-    // .populate("bookmarks");
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate({ path: "posts", options: { sort: { createdAt: -1 } } })
+      .populate("bookmarks");
 
     if (!user) {
       return res
